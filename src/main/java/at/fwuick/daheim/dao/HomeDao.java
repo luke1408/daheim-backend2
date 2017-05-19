@@ -5,10 +5,12 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import at.fwuick.daheim.DaheimException;
 import at.fwuick.daheim.model.Home;
 
 @Repository
@@ -17,19 +19,23 @@ public class HomeDao {
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 	
-	RowMapper<Optional<Home>> mapper = new RowMapper<Optional<Home>>() {
+	RowMapper<Home> mapper = new RowMapper<Home>() {
 
 		@Override
-		public Optional<Home> mapRow(ResultSet rs, int rowNum) throws SQLException {
-			try{				
-				return Optional.of(new Home(rs.getString("bssid"), rs.getLong("id")));
-			}catch(Exception e){
-				return Optional.empty();
-			}
+		public Home mapRow(ResultSet rs, int rowNum) throws SQLException {			
+				return new Home(rs.getString("bssid"), rs.getLong("id"));
 		}
 	};
 	
-	public Optional<Home> findByBssid(String bssid){
-		return jdbcTemplate.queryForObject("select id, bssid from homes where bssid = ?", mapper);
+	public Home findByBssid(String bssid){
+		return jdbcTemplate.queryForObject("select id, bssid from homes where bssid = ?", new Object[]{bssid}, mapper);
+	}
+
+	public Home findByBssidSafe(String bssid) throws DaheimException {
+		try{
+			return findByBssid(bssid);
+		}catch(EmptyResultDataAccessException E){
+			throw new DaheimException("Home not found");
+		}
 	}
 }

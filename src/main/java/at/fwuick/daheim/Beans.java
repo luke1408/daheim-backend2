@@ -1,3 +1,4 @@
+package at.fwuick.daheim;
 import java.security.SecureRandom;
 
 import javax.validation.Validation;

@@ -11,4 +11,5 @@ create table users(
 	home bigint,
 	foreign key(home) references homes(id)
 );
-insert into users(name) values ('Adolf'),('Anton'), ('Heidi');
+insert into users(name, uuid) values ('Anke', 'test');
+insert into homes(bssid) values ('test');
