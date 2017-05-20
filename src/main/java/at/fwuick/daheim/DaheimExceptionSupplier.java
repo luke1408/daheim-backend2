@@ -14,7 +14,8 @@ public class DaheimExceptionSupplier implements Supplier<DaheimException>{
 	public enum Errors{
 		HOME_NOT_FOUND("The home could not be found"), 
 		USER_NOT_FOUND("User could not be found"), 
-		USER_HAS_HOME_ALREADY("User has a home already");
+		USER_HAS_HOME_ALREADY("User has a home already"), 
+		HOME_ALREADY_EXISTS("This home already exists");
 		
 		@Getter private final String message;
 		Errors(String message){

@@ -23,7 +23,8 @@ public class HomeDao {
 
 		@Override
 		public Home mapRow(ResultSet rs, int rowNum) throws SQLException {			
-				return new Home(rs.getString("bssid"), rs.getLong("id"));
+				Home h =  new Home(rs.getString("bssid"), rs.getLong("id"), rs.getString("name"));
+				return h;
 		}
 	};
 	
@@ -37,5 +38,15 @@ public class HomeDao {
 		}catch(EmptyResultDataAccessException E){
 			throw new DaheimException("Home not found");
 		}
+	}
+
+	public boolean bssidExists(String bssid) {
+		return jdbcTemplate.queryForObject("select count(1) from homes where bssid = ?", new Object[]{bssid}, Integer.class) > 0;
+	}
+
+	public void insert(Home home) {
+		jdbcTemplate.update("insert into homes (bssid, name) values (?,?)", new Object[]{home.getBssid(), home.getName()});
+		Long id = jdbcTemplate.queryForObject("SELECT SCOPE_IDENTITY()", Long.class);
+		home.setId(id);
 	}
 }

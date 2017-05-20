@@ -18,6 +18,7 @@ import at.fwuick.daheim.DaheimExceptionSupplier;
 import at.fwuick.daheim.DaheimExceptionSupplier.Errors;
 import at.fwuick.daheim.dao.HomeDao;
 import at.fwuick.daheim.dao.UserDao;
+import at.fwuick.daheim.model.CreateHomeRequest;
 import at.fwuick.daheim.model.CreateUserRequest;
 import at.fwuick.daheim.model.CreateUserResponse;
 import at.fwuick.daheim.model.ErrorResponse;
@@ -54,6 +55,25 @@ public class DaheimService {
 	  }
 
 	  Home home = homeDao.findByBssidSafe(request.getBssid());
+	  user.setHome(home.getId());
+	  userDao.updateHome(user);
+	  return new Response();
+
+  }
+  
+  @RequestMapping(method = RequestMethod.POST, path = "/create-home")
+  public Response joinHome(@RequestBody @Valid CreateHomeRequest request) throws DaheimException {
+	  User user  = userDao.findByUuidSafe(request.getUuid());
+	  if(user.getHome() != 0){
+		  throw new DaheimException(Errors.USER_HAS_HOME_ALREADY);
+	  }
+	  if(homeDao.bssidExists(request.getBssid()))
+		  throw new DaheimException(Errors.HOME_ALREADY_EXISTS);
+	  
+	  Home home = new Home();
+	  home.setName(request.getName());
+	  home.setBssid(request.getBssid());
+	  homeDao.insert(home);
 	  user.setHome(home.getId());
 	  userDao.updateHome(user);
 	  return new Response();

@@ -5,8 +5,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class JoinHomeRequest extends UserContextRequest{
-  @NotNull
-  private String bssid;
-
+public class CreateHomeRequest extends JoinHomeRequest{
+	@NotNull
+	String name;
 }

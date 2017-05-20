@@ -2,7 +2,8 @@ drop table users if exists;
 drop table homes if exists;
 create table homes(
 	id identity primary key,
-	bssid varchar2(45)
+	bssid varchar2(45),
+	name varchar(50)
 );
 create table users(
 	id identity primary key,
