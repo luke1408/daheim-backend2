@@ -29,15 +29,19 @@ public class HomeDao {
 	};
 	
 	public Home findByBssid(String bssid){
-		return jdbcTemplate.queryForObject("select id, bssid from homes where bssid = ?", new Object[]{bssid}, mapper);
+		try{
+			return jdbcTemplate.queryForObject("select id, bssid, name from homes where bssid = ?", new Object[]{bssid}, mapper);
+		}catch(EmptyResultDataAccessException e){
+			return null;
+		}
 	}
 
 	public Home findByBssidSafe(String bssid) throws DaheimException {
-		try{
-			return findByBssid(bssid);
-		}catch(EmptyResultDataAccessException E){
+		Home h = findByBssid(bssid);
+		if(h == null){
 			throw new DaheimException("Home not found");
 		}
+		return h;
 	}
 
 	public boolean bssidExists(String bssid) {
