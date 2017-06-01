@@ -1,5 +1,7 @@
 package at.fwuick.daheim.service;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import javax.validation.Valid;
@@ -26,6 +28,7 @@ import at.fwuick.daheim.model.CreateUserResponse;
 import at.fwuick.daheim.model.ErrorResponse;
 import at.fwuick.daheim.model.Home;
 import at.fwuick.daheim.model.JoinHomeRequest;
+import at.fwuick.daheim.model.ListStatusResponse;
 import at.fwuick.daheim.model.Response;
 import at.fwuick.daheim.model.SetStatusRequest;
 import at.fwuick.daheim.model.Status;
@@ -113,6 +116,12 @@ public class DaheimService {
 		Status status = statusRepository.getStatusSafe(request.getStatus());
 		statusDao.setStatus(user, status);
 		return new Response();
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "/list-status")
+	public Response listStatus() throws DaheimException {
+		List<Status> status = statusDao.getAllStatus();
+		return new ListStatusResponse(status);
 	}
 	
 	

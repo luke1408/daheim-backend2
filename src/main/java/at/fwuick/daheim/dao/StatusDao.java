@@ -12,6 +12,8 @@ import static at.fwuick.daheim.utils.DaheimUtils.data;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
 
 @Component
 public class StatusDao{
@@ -35,6 +37,20 @@ public class StatusDao{
 					public Status mapRow(ResultSet rs, int rowNum) throws SQLException {
 						Status status = new Status();
 						status.setId(id);
+						status.setName(rs.getString("name"));
+						return status;
+					}
+				});
+	}
+
+	public List<Status> getAllStatus() {
+		return jdbcTemplate.query("select id, name from status", 
+				new RowMapper<Status>() {
+
+					@Override
+					public Status mapRow(ResultSet rs, int rowNum) throws SQLException {
+						Status status = new Status();
+						status.setId(rs.getLong("id"));
 						status.setName(rs.getString("name"));
 						return status;
 					}
