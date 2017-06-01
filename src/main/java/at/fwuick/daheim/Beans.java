@@ -5,6 +5,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,5 +20,10 @@ public class Beans {
 	public Validator validator(){
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		return factory.getValidator();
+	}
+	
+	@Bean
+	public Logger logger(){
+		return Logger.getLogger(DaheimBackendApplication.class);
 	}
 }

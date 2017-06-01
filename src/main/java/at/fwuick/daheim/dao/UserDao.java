@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
@@ -20,11 +21,12 @@ import at.fwuick.daheim.DaheimExceptionSupplier;
 import at.fwuick.daheim.DaheimExceptionSupplier.Errors;
 import at.fwuick.daheim.model.Home;
 import at.fwuick.daheim.model.User;
+import static at.fwuick.daheim.utils.DaheimUtils.data;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Repository
-public class UserDao {
+public class UserDao{
 	
 	@Autowired
 	JdbcTemplate jdbcTemplate;
@@ -34,6 +36,7 @@ public class UserDao {
 
 	public void insert(User user) {
 		jdbcTemplate.update("INSERT INTO USERS (name, uuid) VALUES (?, ?)", new Object[]{user.getName(), user.getUuid()});
+		user.setId(jdbcTemplate.queryForObject("select max(id) from users", Long.class));
 	}
 
 	public User findByUuid(String uuid) {

@@ -14,4 +14,9 @@ public class User {
 	public User(String name){
 		this.name = name;
 	}
+	
+	public User(String uuid, String name){
+		this(name);
+		this.uuid = uuid;
+	}
 }
