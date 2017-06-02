@@ -3,9 +3,11 @@ drop table if exists user_status;
 drop table if exists users;
 drop table if exists homes;
 drop table if exists status;
+
+drop view if exists v_user_status;
 drop view if exists v_actual_status;
 drop view if exists v_users_per_home;
-drop view if exists v_user_status;
+drop view if exists v_status_user;
 
 create table homes(
 	id integer auto_increment primary key,
@@ -62,6 +64,11 @@ select a2.user, a2.status from
 (select max(create_date) as create_date, user from v_active_status
 group by user) a1
 join v_active_status a2 on a1.user = a2.user and a1.create_date = a2.create_date;
+
+create view v_status_user as
+select u.*, s.id as status from v_actual_status vas
+join users u on vas.user = u.id
+join status s on s.id = vas.status;
 
 insert into status(name) values ('weg');
 insert into status(name) values ('daheim');

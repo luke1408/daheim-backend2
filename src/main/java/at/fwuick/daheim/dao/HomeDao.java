@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -11,12 +12,17 @@ import org.springframework.stereotype.Repository;
 
 import at.fwuick.daheim.DaheimException;
 import at.fwuick.daheim.model.Home;
+import static at.fwuick.daheim.utils.DaheimUtils.data;
 
 @Repository
 public class HomeDao {
 	
 	@Autowired
 	JdbcTemplate jdbcTemplate;
+	
+	private static final String ALL_FIELDS = "id, bssid, name";
+	private static final String TABLE_NAME = "homes";
+	private static final String SELECT = String.format("select %s from %s", ALL_FIELDS, TABLE_NAME);
 	
 	RowMapper<Home> mapper = new RowMapper<Home>() {
 
@@ -29,7 +35,7 @@ public class HomeDao {
 	
 	public Home findByBssid(String bssid){
 		try{
-			return jdbcTemplate.queryForObject("select id, bssid, name from homes where bssid = ?", new Object[]{bssid}, mapper);
+			return jdbcTemplate.queryForObject(SELECT +" where bssid = ?", data(bssid), mapper);
 		}catch(EmptyResultDataAccessException e){
 			return null;
 		}
@@ -44,12 +50,18 @@ public class HomeDao {
 	}
 
 	public boolean bssidExists(String bssid) {
-		return jdbcTemplate.queryForObject("select count(1) from homes where bssid = ?", new Object[]{bssid}, Integer.class) > 0;
+		return jdbcTemplate.queryForObject("select count(1) from homes where bssid = ?", data(bssid), Integer.class) > 0;
 	}
 
 	public void insert(Home home) {
-		jdbcTemplate.update("insert into homes (bssid, name) values (?,?)", new Object[]{home.getBssid(), home.getName()});
+		jdbcTemplate.update("insert into homes (bssid, name) values (?,?)", data(home.getBssid(), home.getName()));
 		Long id = jdbcTemplate.queryForObject("SELECT SCOPE_IDENTITY()", Long.class);
 		home.setId(id);
+	}
+
+	public Home get(Long id) throws DataAccessException{
+		//TODO: Refactor query making for simple one field where queries
+		return jdbcTemplate.queryForObject(SELECT +" where id = ?", data(id), mapper);
+
 	}
 }

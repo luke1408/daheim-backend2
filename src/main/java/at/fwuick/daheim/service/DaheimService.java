@@ -1,8 +1,11 @@
 package at.fwuick.daheim.service;
 
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -29,10 +32,13 @@ import at.fwuick.daheim.model.ErrorResponse;
 import at.fwuick.daheim.model.Home;
 import at.fwuick.daheim.model.JoinHomeRequest;
 import at.fwuick.daheim.model.ListStatusResponse;
+import at.fwuick.daheim.model.RedactedUser;
 import at.fwuick.daheim.model.Response;
 import at.fwuick.daheim.model.SetStatusRequest;
+import at.fwuick.daheim.model.ShowHomeResponse;
 import at.fwuick.daheim.model.Status;
 import at.fwuick.daheim.model.User;
+import at.fwuick.daheim.model.UserContextRequest;
 
 @RestController
 public class DaheimService {
@@ -69,9 +75,16 @@ public class DaheimService {
 
 	}
 
+	//TODO: Refactor this to a repository
 	private void validateNoHome(User user) throws DaheimException {
 		if (user.getHome() != 0) {
 			throw new DaheimException(Errors.USER_HAS_HOME_ALREADY);
+		}
+	}
+	
+	private void validateHasHome(User user) throws DaheimException{
+		if(user.getHome() == 0){
+			throw new DaheimException(Errors.USER_HAS_NO_HOME);
 		}
 	}
 
@@ -89,11 +102,19 @@ public class DaheimService {
 		return new Response();
 	}
 
+	//TODO: Refactor this to a Repository
 	private User getNoHomeUser(String uuid) throws DaheimException {
 		User user = userDao.findByUuidSafe(uuid);
 		validateNoHome(user);
 		return user;
 	}
+	
+	private User getHomeUser(String uuid) throws DaheimException{
+		User user = userDao.findByUuidSafe(uuid);
+		validateHasHome(user);
+		return user;
+	}
+	//
 
 	@RequestMapping(method = RequestMethod.POST, path = "/check-home")
 	public Response checkHome(@RequestBody @Valid JoinHomeRequest request) throws DaheimException {
@@ -122,6 +143,23 @@ public class DaheimService {
 	public Response listStatus() throws DaheimException {
 		List<Status> status = statusDao.getAllStatus();
 		return new ListStatusResponse(status);
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "/show-home")
+	public Response showHome(@RequestBody @Valid UserContextRequest request) throws DaheimException {
+		User user = getHomeUser(request.getUuid());
+		Home home = homeDao.get(user.getHome());
+		
+		ShowHomeResponse response = new ShowHomeResponse();
+		response.setHome_name(home.getName());
+		List<RedactedUser> users = repo.getUsersOfHome(home).stream()
+				.filter(u -> !u.getUuid().equals(request.getUuid()))
+				.map(u -> {
+					return new RedactedUser(u);
+				})
+				.collect(Collectors.toList());
+		response.setUsers(users);
+		return response;
 	}
 	
 	

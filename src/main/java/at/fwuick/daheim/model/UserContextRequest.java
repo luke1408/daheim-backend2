@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class UserContextRequest {
+public class UserContextRequest {
 	@NotNull
 	private @Getter @Setter String uuid;
 }

@@ -3,6 +3,7 @@ package at.fwuick.daheim.dao;
 import java.security.SecureRandom;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,20 +39,20 @@ public class UserDao{
 		jdbcTemplate.update("INSERT INTO USERS (name, uuid) VALUES (?, ?)", new Object[]{user.getName(), user.getUuid()});
 		user.setId(jdbcTemplate.queryForObject("select max(id) from users", Long.class));
 	}
-
+	
+	private RowMapper<User> baseUserMapper = (rs, rowNum) ->{
+		User user = new User();
+		user.setUuid(rs.getString("uuid"));
+		user.setName(rs.getString("name"));
+		user.setHome(rs.getLong("home"));
+		user.setId(rs.getLong("id"));
+		user.setStatus(rs.getLong("status"));
+		return user;
+	};
+	
+	
 	public User findByUuid(String uuid) {
-		return jdbcTemplate.queryForObject("select * from users where uuid = ?", new Object[]{uuid}, new RowMapper<User>() {
-
-			@Override
-			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-				User user = new User();
-				user.setUuid(rs.getString("uuid"));
-				user.setName(rs.getString("name"));
-				user.setHome(rs.getLong("home"));
-				user.setId(rs.getLong("id"));
-				return user;
-			}
-		});
+		return jdbcTemplate.queryForObject("select * from v_status_user where uuid = ?", new Object[]{uuid}, baseUserMapper);
 	}
 
 	public User findByUuidSafe(String uuid) throws DaheimException {
@@ -65,5 +66,11 @@ public class UserDao{
 	public void updateHome(User user) {
 		jdbcTemplate.update("update users set home = ? where id = ?", new Object[]{user.getHome(), user.getId()});
 		
+	}
+
+	public List<User> findByHome(Long home) {
+
+			return jdbcTemplate.query("select * from v_status_user where home = ?", new Object[]{home}, baseUserMapper);
+
 	}
 }

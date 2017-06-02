@@ -10,6 +10,7 @@ public class User {
 	private String uuid;
 	private Long home;
 	private Long id;
+	private Long status;
 	
 	public User(String name){
 		this.name = name;
