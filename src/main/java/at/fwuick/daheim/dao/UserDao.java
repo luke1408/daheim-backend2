@@ -23,12 +23,15 @@ import at.fwuick.daheim.DaheimExceptionSupplier.Errors;
 import at.fwuick.daheim.model.Home;
 import at.fwuick.daheim.model.User;
 import static at.fwuick.daheim.utils.DaheimUtils.data;
+import static at.fwuick.daheim.utils.QueryUtils.select;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 public class UserDao{
 	
+	private static final String TABLE_NAME = "v_status_user";
+
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 	
@@ -52,7 +55,8 @@ public class UserDao{
 	
 	
 	public User findByUuid(String uuid) {
-		return jdbcTemplate.queryForObject("select * from v_status_user where uuid = ?", new Object[]{uuid}, baseUserMapper);
+		
+		return jdbcTemplate.queryForObject(select("*", TABLE_NAME).where("uuid"), new Object[]{uuid}, baseUserMapper);
 	}
 
 	public User findByUuidSafe(String uuid) throws DaheimException {
@@ -70,7 +74,7 @@ public class UserDao{
 
 	public List<User> findByHome(Long home) {
 
-			return jdbcTemplate.query("select * from v_status_user where home = ?", new Object[]{home}, baseUserMapper);
+			return jdbcTemplate.query(select("*", TABLE_NAME).where("home"), new Object[]{home}, baseUserMapper);
 
 	}
 }

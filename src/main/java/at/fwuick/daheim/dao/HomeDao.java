@@ -12,7 +12,10 @@ import org.springframework.stereotype.Repository;
 
 import at.fwuick.daheim.DaheimException;
 import at.fwuick.daheim.model.Home;
+import at.fwuick.daheim.utils.QuerySelect;
+
 import static at.fwuick.daheim.utils.DaheimUtils.data;
+import static at.fwuick.daheim.utils.QueryUtils.select;
 
 @Repository
 public class HomeDao {
@@ -22,7 +25,7 @@ public class HomeDao {
 	
 	private static final String ALL_FIELDS = "id, bssid, name";
 	private static final String TABLE_NAME = "homes";
-	private static final String SELECT = String.format("select %s from %s", ALL_FIELDS, TABLE_NAME);
+	private static final QuerySelect SELECT = select(ALL_FIELDS, TABLE_NAME);
 	
 	RowMapper<Home> mapper = new RowMapper<Home>() {
 
@@ -35,7 +38,7 @@ public class HomeDao {
 	
 	public Home findByBssid(String bssid){
 		try{
-			return jdbcTemplate.queryForObject(SELECT +" where bssid = ?", data(bssid), mapper);
+			return jdbcTemplate.queryForObject(SELECT.where("bssid"), data(bssid), mapper);
 		}catch(EmptyResultDataAccessException e){
 			return null;
 		}
@@ -60,8 +63,7 @@ public class HomeDao {
 	}
 
 	public Home get(Long id) throws DataAccessException{
-		//TODO: Refactor query making for simple one field where queries
-		return jdbcTemplate.queryForObject(SELECT +" where id = ?", data(id), mapper);
+		return jdbcTemplate.queryForObject(SELECT.whereID(), data(id), mapper);
 
 	}
 }

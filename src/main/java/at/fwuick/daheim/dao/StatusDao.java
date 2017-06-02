@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import at.fwuick.daheim.model.Status;
 import at.fwuick.daheim.model.User;
 import static at.fwuick.daheim.utils.DaheimUtils.data;
+import static at.fwuick.daheim.utils.QueryUtils.select;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +22,8 @@ public class StatusDao{
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 	
+	private static final String TABLE_NAME = "status";
+	
 	public void setStatus(User user, Status status){
 		int minutesToExpiration = 15;
 		String minutesStr = String.format("00:%d:00", minutesToExpiration);
@@ -30,21 +33,17 @@ public class StatusDao{
 	}
 	
 	public Status getStatus(long id){
-		return jdbcTemplate.queryForObject("select name from status where id = ?",  data(id), 
-				new RowMapper<Status>() {
-
-					@Override
-					public Status mapRow(ResultSet rs, int rowNum) throws SQLException {
-						Status status = new Status();
-						status.setId(id);
-						status.setName(rs.getString("name"));
-						return status;
-					}
+		return jdbcTemplate.queryForObject(select("name", TABLE_NAME).whereID(),  data(id), 
+				(rs,rowNum) ->{
+					Status status = new Status();
+					status.setId(id);
+					status.setName(rs.getString("name"));
+					return status;
 				});
 	}
 
 	public List<Status> getAllStatus() {
-		return jdbcTemplate.query("select id, name from status", 
+		return jdbcTemplate.query(select("id, name", TABLE_NAME).all(), 
 				new RowMapper<Status>() {
 
 					@Override

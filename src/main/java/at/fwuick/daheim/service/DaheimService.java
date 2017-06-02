@@ -23,6 +23,7 @@ import at.fwuick.daheim.dao.StatusDao;
 import at.fwuick.daheim.dao.StatusRepository;
 import at.fwuick.daheim.dao.UserDao;
 import at.fwuick.daheim.dao.UserHomeRepository;
+import at.fwuick.daheim.dao.UserRepository;
 import at.fwuick.daheim.model.CheckHomeObject;
 import at.fwuick.daheim.model.CheckHomeResponse;
 import at.fwuick.daheim.model.CreateHomeRequest;
@@ -56,6 +57,9 @@ public class DaheimService {
 	
 	@Autowired
 	StatusRepository statusRepository;
+	
+	@Autowired
+	UserRepository userRepository;
 
 	@RequestMapping(method = RequestMethod.POST, path = "/create-user")
 	public Response createUser(@RequestBody @Valid CreateUserRequest request) {
@@ -67,7 +71,7 @@ public class DaheimService {
 
 	@RequestMapping(method = RequestMethod.POST, path = "/join-home")
 	public Response joinHome(@RequestBody @Valid JoinHomeRequest request) throws DaheimException {
-		User user = getNoHomeUser(request.getUuid());
+		User user = userRepository.getNoHomeUser(request.getUuid());
 		Home home = homeDao.findByBssidSafe(request.getBssid());
 		user.setHome(home.getId());
 		userDao.updateHome(user);
@@ -75,22 +79,10 @@ public class DaheimService {
 
 	}
 
-	//TODO: Refactor this to a repository
-	private void validateNoHome(User user) throws DaheimException {
-		if (user.getHome() != 0) {
-			throw new DaheimException(Errors.USER_HAS_HOME_ALREADY);
-		}
-	}
-	
-	private void validateHasHome(User user) throws DaheimException{
-		if(user.getHome() == 0){
-			throw new DaheimException(Errors.USER_HAS_NO_HOME);
-		}
-	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/create-home")
 	public Response joinHome(@RequestBody @Valid CreateHomeRequest request) throws DaheimException {
-		User user = getNoHomeUser(request.getUuid());
+		User user = userRepository.getNoHomeUser(request.getUuid());
 		if (homeDao.bssidExists(request.getBssid()))
 			throw new DaheimException(Errors.HOME_ALREADY_EXISTS);
 		Home home = new Home();
@@ -102,23 +94,9 @@ public class DaheimService {
 		return new Response();
 	}
 
-	//TODO: Refactor this to a Repository
-	private User getNoHomeUser(String uuid) throws DaheimException {
-		User user = userDao.findByUuidSafe(uuid);
-		validateNoHome(user);
-		return user;
-	}
-	
-	private User getHomeUser(String uuid) throws DaheimException{
-		User user = userDao.findByUuidSafe(uuid);
-		validateHasHome(user);
-		return user;
-	}
-	//
-
 	@RequestMapping(method = RequestMethod.POST, path = "/check-home")
 	public Response checkHome(@RequestBody @Valid JoinHomeRequest request) throws DaheimException {
-		getNoHomeUser(request.getUuid());
+		userRepository.getNoHomeUser(request.getUuid());
 		Home h = homeDao.findByBssid(request.getBssid());
 
 		CheckHomeResponse r = new CheckHomeResponse();
@@ -147,7 +125,7 @@ public class DaheimService {
 	
 	@RequestMapping(method = RequestMethod.POST, path = "/show-home")
 	public Response showHome(@RequestBody @Valid UserContextRequest request) throws DaheimException {
-		User user = getHomeUser(request.getUuid());
+		User user = userRepository.getHomeUser(request.getUuid());
 		Home home = homeDao.get(user.getHome());
 		
 		ShowHomeResponse response = new ShowHomeResponse();
