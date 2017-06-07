@@ -1,7 +1,8 @@
-package at.fwuick.daheim.model;
+package at.fwuick.daheim.model.response;
 
 import java.util.List;
 
+import at.fwuick.daheim.model.RedactedUser;
 import lombok.Getter;
 import lombok.Setter;
 

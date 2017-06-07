@@ -25,21 +25,21 @@ import at.fwuick.daheim.dao.UserDao;
 import at.fwuick.daheim.dao.UserHomeRepository;
 import at.fwuick.daheim.dao.UserRepository;
 import at.fwuick.daheim.model.CheckHomeObject;
-import at.fwuick.daheim.model.CheckHomeResponse;
-import at.fwuick.daheim.model.CreateHomeRequest;
-import at.fwuick.daheim.model.CreateUserRequest;
-import at.fwuick.daheim.model.CreateUserResponse;
-import at.fwuick.daheim.model.ErrorResponse;
 import at.fwuick.daheim.model.Home;
-import at.fwuick.daheim.model.JoinHomeRequest;
-import at.fwuick.daheim.model.ListStatusResponse;
 import at.fwuick.daheim.model.RedactedUser;
-import at.fwuick.daheim.model.Response;
-import at.fwuick.daheim.model.SetStatusRequest;
-import at.fwuick.daheim.model.ShowHomeResponse;
 import at.fwuick.daheim.model.Status;
 import at.fwuick.daheim.model.User;
-import at.fwuick.daheim.model.UserContextRequest;
+import at.fwuick.daheim.model.requests.CreateHomeRequest;
+import at.fwuick.daheim.model.requests.CreateUserRequest;
+import at.fwuick.daheim.model.requests.JoinHomeRequest;
+import at.fwuick.daheim.model.requests.SetStatusRequest;
+import at.fwuick.daheim.model.requests.UserContextRequest;
+import at.fwuick.daheim.model.response.CheckHomeResponse;
+import at.fwuick.daheim.model.response.CreateUserResponse;
+import at.fwuick.daheim.model.response.ErrorResponse;
+import at.fwuick.daheim.model.response.ListStatusResponse;
+import at.fwuick.daheim.model.response.Response;
+import at.fwuick.daheim.model.response.ShowHomeResponse;
 
 @RestController
 public class DaheimService {

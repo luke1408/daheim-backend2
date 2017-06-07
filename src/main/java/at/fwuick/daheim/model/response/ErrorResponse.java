@@ -1,4 +1,4 @@
-package at.fwuick.daheim.model;
+package at.fwuick.daheim.model.response;
 
 import javax.validation.ConstraintViolation;
 

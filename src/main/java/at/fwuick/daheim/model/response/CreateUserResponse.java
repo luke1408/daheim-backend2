@@ -1,4 +1,4 @@
-package at.fwuick.daheim.model;
+package at.fwuick.daheim.model.response;
 
 import lombok.Data;
 import lombok.NonNull;

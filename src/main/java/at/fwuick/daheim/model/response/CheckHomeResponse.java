@@ -1,5 +1,6 @@
-package at.fwuick.daheim.model;
+package at.fwuick.daheim.model.response;
 
+import at.fwuick.daheim.model.CheckHomeObject;
 import lombok.Data;
 
 @Data

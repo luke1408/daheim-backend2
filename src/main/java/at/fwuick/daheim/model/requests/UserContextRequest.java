@@ -1,4 +1,4 @@
-package at.fwuick.daheim.model;
+package at.fwuick.daheim.model.requests;
 
 import javax.validation.constraints.NotNull;
 
