@@ -26,6 +26,7 @@ import at.fwuick.daheim.dao.UserHomeRepository;
 import at.fwuick.daheim.dao.UserRepository;
 import at.fwuick.daheim.model.CheckHomeObject;
 import at.fwuick.daheim.model.Home;
+import at.fwuick.daheim.model.HomeUserStatus;
 import at.fwuick.daheim.model.RedactedUser;
 import at.fwuick.daheim.model.Status;
 import at.fwuick.daheim.model.User;
@@ -37,6 +38,7 @@ import at.fwuick.daheim.model.requests.UserContextRequest;
 import at.fwuick.daheim.model.response.CheckHomeResponse;
 import at.fwuick.daheim.model.response.CreateUserResponse;
 import at.fwuick.daheim.model.response.ErrorResponse;
+import at.fwuick.daheim.model.response.GetUserHomeStatusResponse;
 import at.fwuick.daheim.model.response.ListStatusResponse;
 import at.fwuick.daheim.model.response.Response;
 import at.fwuick.daheim.model.response.ShowHomeResponse;
@@ -60,6 +62,9 @@ public class DaheimService {
 	
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	UserHomeRepository userHomeRepository;
 
 	@RequestMapping(method = RequestMethod.POST, path = "/create-user")
 	public Response createUser(@RequestBody @Valid CreateUserRequest request) {
@@ -138,6 +143,22 @@ public class DaheimService {
 				.collect(Collectors.toList());
 		response.setUsers(users);
 		return response;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "/get-home-status")
+	public Response getUserHomeStatus(@RequestBody @Valid UserContextRequest request) throws DaheimException {
+		User user = userDao.findByUuidSafe(request.getUuid());
+		
+		HomeUserStatus status;
+		if(userHomeRepository.hasHome(user)){
+			status = HomeUserStatus.HAS_HOME;
+		}else if(userHomeRepository.hasRequest(user)){
+			status = HomeUserStatus.REQUESTED;
+		}else{
+			status = HomeUserStatus.HOMELESS;
+		}
+		
+		return new GetUserHomeStatusResponse(status);
 	}
 	
 	

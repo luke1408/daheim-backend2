@@ -5,4 +5,5 @@ public class QueryUtils {
 	public static QuerySelect select(String fields, String tableName){
 		return new QuerySelect(fields, tableName);
 	}
+	
 }
