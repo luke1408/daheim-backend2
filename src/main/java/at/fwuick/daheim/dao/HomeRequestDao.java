@@ -34,4 +34,13 @@ public class HomeRequestDao {
     return jdbc.query(select("*", "v_home_requests").where("home"), data(id), mapper);
   }
 
+  public void deactivate(UserHomeReq req) {
+    jdbc.update("update home_requests set active = 0 where active = 1 and user = ? and home = ?", data(req.getUser(), req.getHome()));
+  }
+
+  public List<UserHomeReq> findByHomeAndUser(Long home, Long user) {
+    return jdbc.query("select * from v_home_requests where home = ? and user = ?", data(home, user), mapper);
+
+  }
+
 }

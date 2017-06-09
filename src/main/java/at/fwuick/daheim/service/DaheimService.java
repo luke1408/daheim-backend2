@@ -30,6 +30,7 @@ import at.fwuick.daheim.model.User;
 import at.fwuick.daheim.model.UserHomeReq;
 import at.fwuick.daheim.model.requests.CreateHomeRequest;
 import at.fwuick.daheim.model.requests.CreateUserRequest;
+import at.fwuick.daheim.model.requests.HomeReqResponseRequest;
 import at.fwuick.daheim.model.requests.JoinHomeRequest;
 import at.fwuick.daheim.model.requests.SetStatusRequest;
 import at.fwuick.daheim.model.requests.UserContextRequest;
@@ -44,6 +45,8 @@ import at.fwuick.daheim.model.response.ShowHomeResponse;
 
 @RestController
 public class DaheimService {
+
+  private static final Response SUCCESS = new Response();
   @Autowired
   UserDao userDao;
 
@@ -75,6 +78,7 @@ public class DaheimService {
 
   @RequestMapping(method = RequestMethod.POST, path = "/join-home")
   public Response joinHome(@RequestBody @Valid JoinHomeRequest request) throws DaheimException {
+    // TODO: Remove this (Request system)
     User user = userRepository.getNoHomeUser(request.getUuid());
     Home home = homeDao.findByBssidSafe(request.getBssid());
     user.setHome(home.getId());
@@ -164,6 +168,20 @@ public class DaheimService {
     List<UserHomeReq> reqs = userHomeRepository.getHomeRequests(home);
     List<User> users = reqs.stream().map(r -> r.getUser()).map(userDao::get).collect(Collectors.toList());
     return new GetHomeRequestsResponse(users);
+  }
+
+  @RequestMapping(method = RequestMethod.POST, path = "/answer-request")
+  public Response answerRequest(@RequestBody @Valid HomeReqResponseRequest request) throws DaheimException {
+    User user = userRepository.getHomeUser(request.getUuid());
+    Home home = homeDao.get(user.getHome());
+    User userToAdd = userRepository.getNoHomeUser(request.getUser());
+    userHomeRepository.validateRequestExists(user, home);
+    if (request.getAccept()) {
+      userHomeRepository.addUserToHome(home, userToAdd);
+    } else {
+      userHomeRepository.removeRequest(home, userToAdd);
+    }
+    return SUCCESS;
   }
 
   @ExceptionHandler(Exception.class)

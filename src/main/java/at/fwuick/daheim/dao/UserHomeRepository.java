@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import at.fwuick.daheim.DaheimException;
+import at.fwuick.daheim.DaheimExceptionSupplier.Errors;
 import at.fwuick.daheim.model.Home;
 import at.fwuick.daheim.model.User;
 import at.fwuick.daheim.model.UserHomeReq;
@@ -49,5 +51,28 @@ public class UserHomeRepository {
 
   public List<UserHomeReq> getHomeRequests(Home home) {
     return requestDao.findByHome(home.getId());
+  }
+
+  public void addUserToHome(Home home, User userToAdd) {
+    userToAdd.setHome(home.getId());
+    userDao.updateHome(userToAdd);
+    removeRequest(home, userToAdd);
+  }
+
+  public void removeRequest(Home home, User user) {
+    UserHomeReq req = new UserHomeReq(user.getId(), home.getId());
+    requestDao.deactivate(req);
+
+  }
+
+  public boolean requestsExists(User user, Home home) {
+
+    return requestDao.findByHomeAndUser(home.getId(), user.getId()).size() > 0;
+  }
+
+  public void validateRequestExists(User user, Home home) throws DaheimException {
+    if (!requestsExists(user, home)) {
+      throw new DaheimException(Errors.REQUEST_NOT_FOUND);
+    }
   }
 }
