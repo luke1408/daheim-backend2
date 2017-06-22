@@ -58,7 +58,7 @@ public class HomeDao {
 
 	public void insert(Home home) {
 		jdbcTemplate.update("insert into homes (bssid, name) values (?,?)", data(home.getBssid(), home.getName()));
-		Long id = jdbcTemplate.queryForObject("SELECT SCOPE_IDENTITY()", Long.class);
+		Long id = jdbcTemplate.queryForObject("SELECT max(id) from homes", Long.class);
 		home.setId(id);
 	}
 

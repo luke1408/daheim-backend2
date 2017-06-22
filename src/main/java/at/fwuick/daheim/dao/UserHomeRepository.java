@@ -46,7 +46,7 @@ public class UserHomeRepository {
   }
 
   public Home getHomeOfUser(User user) {
-    return homeDao.get(user.getId());
+    return homeDao.get(user.getHome());
   }
 
   public List<UserHomeReq> getHomeRequests(Home home) {
@@ -69,10 +69,33 @@ public class UserHomeRepository {
 
     return requestDao.findByHomeAndUser(home.getId(), user.getId()).size() > 0;
   }
+  
+  private boolean requestsExists(User user) {
+	  return requestDao.findByUser(user.getId()).size() > 0;
+  }
 
   public void validateRequestExists(User user, Home home) throws DaheimException {
     if (!requestsExists(user, home)) {
       throw new DaheimException(Errors.REQUEST_NOT_FOUND);
     }
   }
+
+	public void validateRequestNotExists(User user, Home home) throws DaheimException {
+		if (requestsExists(user, home)) {
+		      throw new DaheimException(Errors.USER_HAS_REQUEST_ALREADY);
+		}
+	}
+
+	public void validateRequestNotExists(User user) throws DaheimException {
+		if (requestsExists(user)) {
+		      throw new DaheimException(Errors.USER_HAS_REQUEST_ALREADY);
+		}
+		
+	}
+
+	public void createRequest(User user, Home home) {
+		UserHomeReq req = new UserHomeReq(user.getId(), home.getId());
+		requestDao.insert(req);
+	}
+
 }

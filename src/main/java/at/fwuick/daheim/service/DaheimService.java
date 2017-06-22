@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,6 +68,9 @@ public class DaheimService {
 
   @Autowired
   UserHomeRepository userHomeRepository;
+  
+  @Autowired
+  Logger log;
 
   @RequestMapping(method = RequestMethod.POST, path = "/create-user")
   public Response createUser(@RequestBody @Valid CreateUserRequest request) {
@@ -78,13 +82,11 @@ public class DaheimService {
 
   @RequestMapping(method = RequestMethod.POST, path = "/join-home")
   public Response joinHome(@RequestBody @Valid JoinHomeRequest request) throws DaheimException {
-    // TODO: Remove this (Request system)
     User user = userRepository.getNoHomeUser(request.getUuid());
     Home home = homeDao.findByBssidSafe(request.getBssid());
-    user.setHome(home.getId());
-    userDao.updateHome(user);
-    return new Response();
-
+    userHomeRepository.validateRequestNotExists(user);
+    userHomeRepository.createRequest(user, home);
+    return SUCCESS;
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/create-home")
@@ -99,7 +101,7 @@ public class DaheimService {
     homeDao.insert(home);
     user.setHome(home.getId());
     userDao.updateHome(user);
-    return new Response();
+    return SUCCESS;
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/check-home")
@@ -175,7 +177,7 @@ public class DaheimService {
     User user = userRepository.getHomeUser(request.getUuid());
     Home home = homeDao.get(user.getHome());
     User userToAdd = userRepository.getNoHomeUser(request.getUser());
-    userHomeRepository.validateRequestExists(user, home);
+    userHomeRepository.validateRequestExists(userToAdd, home);
     if (request.getAccept()) {
       userHomeRepository.addUserToHome(home, userToAdd);
     } else {
@@ -184,8 +186,14 @@ public class DaheimService {
     return SUCCESS;
   }
 
+  @ExceptionHandler(DaheimException.class)
+  public ErrorResponse katch(DaheimException e) {
+    return new ErrorResponse(e.getMessage());
+  }
+  
   @ExceptionHandler(Exception.class)
   public ErrorResponse katch(Exception e) {
+	e.printStackTrace();
     return new ErrorResponse(e.getMessage());
   }
 

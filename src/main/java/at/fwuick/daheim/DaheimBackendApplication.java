@@ -21,7 +21,7 @@ public class DaheimBackendApplication implements CommandLineRunner{
 
 	@Override
 	public void run(String... arg0) throws Exception {
-		databaseInitializer.run();
+		//databaseInitializer.run();
 		
 	}
 }

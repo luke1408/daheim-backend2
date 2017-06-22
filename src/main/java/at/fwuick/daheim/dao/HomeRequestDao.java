@@ -16,8 +16,13 @@ import lombok.val;
 @Repository
 public class HomeRequestDao {
 
-  @Autowired
+  private static final int MINUTES_BEFORE_EXPIRE = 5;
+
+@Autowired
   JdbcTemplate jdbc;
+  
+  @Autowired
+  UtilDao util;
 
   private static RowMapper<UserHomeReq> mapper = (rs, rownum) -> {
     val usr = new UserHomeReq();
@@ -42,5 +47,9 @@ public class HomeRequestDao {
     return jdbc.query("select * from v_home_requests where home = ? and user = ?", data(home, user), mapper);
 
   }
+
+	public void insert(UserHomeReq req) {
+		jdbc.update("insert into home_requests (user, home, active) values (?,?,1)", req.getUser(), req.getHome());
+	}
 
 }
