@@ -20,8 +20,7 @@ import at.fwuick.daheim.dao.HomeDao;
 import at.fwuick.daheim.dao.StatusDao;
 import at.fwuick.daheim.dao.StatusRepository;
 import at.fwuick.daheim.dao.UserDao;
-import at.fwuick.daheim.dao.UserHomeRepository;
-import at.fwuick.daheim.dao.UserRepository;
+import at.fwuick.daheim.dao.ResidenceRepository;
 import at.fwuick.daheim.model.CheckHomeObject;
 import at.fwuick.daheim.model.Home;
 import at.fwuick.daheim.model.HomeUserStatus;
@@ -29,10 +28,11 @@ import at.fwuick.daheim.model.RedactedUser;
 import at.fwuick.daheim.model.Status;
 import at.fwuick.daheim.model.User;
 import at.fwuick.daheim.model.UserHomeReq;
+import at.fwuick.daheim.model.UserIdentity;
 import at.fwuick.daheim.model.requests.CreateHomeRequest;
 import at.fwuick.daheim.model.requests.CreateUserRequest;
 import at.fwuick.daheim.model.requests.HomeReqResponseRequest;
-import at.fwuick.daheim.model.requests.JoinHomeRequest;
+import at.fwuick.daheim.model.requests.HomeContextRequest;
 import at.fwuick.daheim.model.requests.SetStatusRequest;
 import at.fwuick.daheim.model.requests.UserContextRequest;
 import at.fwuick.daheim.model.response.CheckHomeResponse;
@@ -43,6 +43,8 @@ import at.fwuick.daheim.model.response.GetUserHomeStatusResponse;
 import at.fwuick.daheim.model.response.ListStatusResponse;
 import at.fwuick.daheim.model.response.Response;
 import at.fwuick.daheim.model.response.ShowHomeResponse;
+import at.fwuick.daheim.repository.HomeValidatedRepository;
+import at.fwuick.daheim.repository.UserValidatedRepository;
 
 @RestController
 public class DaheimService {
@@ -53,9 +55,12 @@ public class DaheimService {
 
   @Autowired
   HomeDao homeDao;
+  
+  @Autowired
+  HomeValidatedRepository homeRepository;
 
   @Autowired
-  UserHomeRepository repo;
+  ResidenceRepository repo;
 
   @Autowired
   StatusDao statusDao;
@@ -64,10 +69,10 @@ public class DaheimService {
   StatusRepository statusRepository;
 
   @Autowired
-  UserRepository userRepository;
+  UserValidatedRepository userRepository;
 
   @Autowired
-  UserHomeRepository userHomeRepository;
+  ResidenceRepository userHomeRepository;
   
   @Autowired
   Logger log;
@@ -81,9 +86,9 @@ public class DaheimService {
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/join-home")
-  public Response joinHome(@RequestBody @Valid JoinHomeRequest request) throws DaheimException {
-    User user = userRepository.getNoHomeUser(request.getUuid());
-    Home home = homeDao.findByBssidSafe(request.getBssid());
+  public Response joinHome(@RequestBody @Valid HomeContextRequest request) throws DaheimException {
+    User user = userRepository.get(request.getUserIdentity());
+    Home home = homeRepository.get(request.getHomeIdentity());
     userHomeRepository.validateRequestNotExists(user);
     userHomeRepository.createRequest(user, home);
     return SUCCESS;
@@ -91,7 +96,7 @@ public class DaheimService {
 
   @RequestMapping(method = RequestMethod.POST, path = "/create-home")
   public Response joinHome(@RequestBody @Valid CreateHomeRequest request) throws DaheimException {
-    User user = userRepository.getNoHomeUser(request.getUuid());
+    User user = userRepository.get(request.getUserIdentity());
     if (homeDao.bssidExists(request.getBssid())) {
       throw new DaheimException(Errors.HOME_ALREADY_EXISTS);
     }
@@ -105,9 +110,9 @@ public class DaheimService {
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/check-home")
-  public Response checkHome(@RequestBody @Valid JoinHomeRequest request) throws DaheimException {
-    userRepository.getNoHomeUser(request.getUuid());
-    Home h = homeDao.findByBssid(request.getBssid());
+  public Response checkHome(@RequestBody @Valid HomeContextRequest request) throws DaheimException {
+    userRepository.get(request.getUserIdentity());
+    Home h = homeRepository.get(request.getHomeIdentity());
 
     CheckHomeResponse r = new CheckHomeResponse();
     if (h != null) {
@@ -121,7 +126,7 @@ public class DaheimService {
 
   @RequestMapping(method = RequestMethod.POST, path = "/set-status")
   public Response setStatus(@RequestBody @Valid SetStatusRequest request) throws DaheimException {
-    User user = userDao.findByUuidSafe(request.getUuid());
+    User user = userDao.get(request.getUserIdentity());
     Status status = statusRepository.getStatusSafe(request.getStatus());
     statusDao.setStatus(user, status);
     return new Response();
@@ -135,7 +140,7 @@ public class DaheimService {
 
   @RequestMapping(method = RequestMethod.POST, path = "/show-home")
   public Response showHome(@RequestBody @Valid UserContextRequest request) throws DaheimException {
-    User user = userRepository.getHomeUser(request.getUuid());
+    User user = userRepository.getHomeUser(request.getUserIdentity());
     Home home = homeDao.get(user.getHome());
 
     ShowHomeResponse response = new ShowHomeResponse();
@@ -149,7 +154,7 @@ public class DaheimService {
 
   @RequestMapping(method = RequestMethod.POST, path = "/get-home-status")
   public Response getUserHomeStatus(@RequestBody @Valid UserContextRequest request) throws DaheimException {
-    User user = userDao.findByUuidSafe(request.getUuid());
+    User user = userDao.get(request.getUserIdentity());
 
     HomeUserStatus status;
     if (userHomeRepository.hasHome(user)) {
@@ -165,18 +170,18 @@ public class DaheimService {
 
   @RequestMapping(method = RequestMethod.POST, path = "/get-home-requests")
   public Response getHomeRequests(@RequestBody @Valid UserContextRequest request) throws DaheimException {
-    User user = userRepository.getHomeUser(request.getUuid());
+    User user = userRepository.getHomeUser(request.getUserIdentity());
     Home home = userHomeRepository.getHomeOfUser(user);
     List<UserHomeReq> reqs = userHomeRepository.getHomeRequests(home);
-    List<User> users = reqs.stream().map(r -> r.getUser()).map(userDao::get).collect(Collectors.toList());
+    List<User> users = reqs.stream().map(r -> r.getUser()).map(UserIdentity::id).map(userDao::get).collect(Collectors.toList());
     return new GetHomeRequestsResponse(users);
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/answer-request")
   public Response answerRequest(@RequestBody @Valid HomeReqResponseRequest request) throws DaheimException {
-    User user = userRepository.getHomeUser(request.getUuid());
+    User user = userRepository.getHomeUser(request.getUserIdentity());
     Home home = homeDao.get(user.getHome());
-    User userToAdd = userRepository.getNoHomeUser(request.getUser());
+    User userToAdd = userRepository.getNoHomeUser(UserIdentity.id(request.getUser()));
     userHomeRepository.validateRequestExists(userToAdd, home);
     if (request.getAccept()) {
       userHomeRepository.addUserToHome(home, userToAdd);

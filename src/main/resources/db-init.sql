@@ -1,15 +1,7 @@
- 
-drop trigger if exists init_status_after_user_create;
-drop table if exists home_requests;
-drop table if exists user_status;
-drop table if exists users;
-drop table if exists homes;
-drop table if exists status;
+create schema daheim;
 
-drop view if exists v_user_status;
-drop view if exists v_actual_status;
-drop view if exists v_users_per_home;
-drop view if exists v_status_user;
+GRANT SELECT, UPDATE, INSERT, DELETE ON daheim.* TO 'daheimuser'@'localhost' IDENTIFIED BY 'tckdmX8a0CSS7XsyYnlM';
+USE daheim;
 
 create table homes(
 	id integer auto_increment primary key,
@@ -86,10 +78,3 @@ select id, user, home from home_requests where active = 1;
 
 insert into status(name) values ('weg');
 insert into status(name) values ('daheim');
-insert into homes(bssid, name) values ('test', 'test');
-insert into users(name, uuid, home) values ('Anke', 'asdf', 1);
-insert into users(name, uuid, home) values ('asdf', 'fdsa', 1);
-insert into users(name, uuid, home) values ('bx', 'cxbcxf', 1);
-insert into users(name, uuid, home) values ('cb', 'fdscba', 1);
-insert into users(name, uuid) values ('Anke', 'test');
-insert into home_requests(user, home) values (5, 1);

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import at.fwuick.daheim.DaheimException;
 import at.fwuick.daheim.model.Home;
+import at.fwuick.daheim.model.HomeIdentity;
 import at.fwuick.daheim.utils.QuerySelect;
 
 import static at.fwuick.daheim.utils.DaheimUtils.data;
@@ -35,22 +36,6 @@ public class HomeDao {
 				return h;
 		}
 	};
-	
-	public Home findByBssid(String bssid){
-		try{
-			return jdbcTemplate.queryForObject(SELECT.where("bssid"), data(bssid), mapper);
-		}catch(EmptyResultDataAccessException e){
-			return null;
-		}
-	}
-
-	public Home findByBssidSafe(String bssid) throws DaheimException {
-		Home h = findByBssid(bssid);
-		if(h == null){
-			throw new DaheimException("Home not found");
-		}
-		return h;
-	}
 
 	public boolean bssidExists(String bssid) {
 		return jdbcTemplate.queryForObject("select count(1) from homes where bssid = ?", data(bssid), Integer.class) > 0;
@@ -63,7 +48,12 @@ public class HomeDao {
 	}
 
 	public Home get(Long id) throws DataAccessException{
-		return jdbcTemplate.queryForObject(SELECT.whereID(), data(id), mapper);
+		HomeIdentity hid = HomeIdentity.id(id);
+		return get(hid);
 
+	}
+
+	public Home get(HomeIdentity hid) {
+		return jdbcTemplate.queryForObject(SELECT.where(hid.getName()), data(hid.getValue()), mapper);
 	}
 }

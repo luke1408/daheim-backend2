@@ -15,6 +15,7 @@ import at.fwuick.daheim.DaheimException;
 import at.fwuick.daheim.DaheimExceptionSupplier;
 import at.fwuick.daheim.DaheimExceptionSupplier.Errors;
 import at.fwuick.daheim.model.User;
+import at.fwuick.daheim.model.UserIdentity;
 
 @Repository
 public class UserDao {
@@ -42,18 +43,8 @@ public class UserDao {
     return user;
   };
 
-  public User findByUuid(String uuid) {
 
-    return jdbcTemplate.queryForObject(select("*", TABLE_NAME).where("uuid"), new Object[] { uuid }, baseUserMapper);
-  }
 
-  public User findByUuidSafe(String uuid) throws DaheimException {
-    try {
-      return findByUuid(uuid);
-    } catch (EmptyResultDataAccessException e) {
-      throw new DaheimException(Errors.USER_NOT_FOUND);
-    }
-  }
 
   public void updateHome(User user) {
     jdbcTemplate.update("update users set home = ? where id = ?", new Object[] { user.getHome(), user.getId() });
@@ -66,7 +57,7 @@ public class UserDao {
 
   }
 
-  public User get(long id) {
-    return jdbcTemplate.queryForObject(select("*", TABLE_NAME).whereID(), data(id), baseUserMapper);
+  public User get(UserIdentity id) {
+	  return jdbcTemplate.queryForObject(select("*", TABLE_NAME).where(id.getName()), new Object[] { id.getValue() }, baseUserMapper);
   }
 }

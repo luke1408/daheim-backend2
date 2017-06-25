@@ -13,7 +13,7 @@ import at.fwuick.daheim.model.User;
 import at.fwuick.daheim.model.UserHomeReq;
 
 @Repository
-public class UserHomeRepository {
+public class ResidenceRepository {
 
   @Autowired
   JdbcTemplate jdbcTemplate;

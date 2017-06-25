@@ -1,5 +1,6 @@
 package at.fwuick.daheim.model;
 
+import at.fwuick.daheim.utils.Identity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,8 @@ public class User {
 	private Long home;
 	private Long id;
 	private Long status;
+	
+
 	
 	public User(String name){
 		this.name = name;
