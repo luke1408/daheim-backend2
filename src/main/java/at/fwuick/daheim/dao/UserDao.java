@@ -1,19 +1,15 @@
 package at.fwuick.daheim.dao;
 
-import static at.fwuick.daheim.utils.DaheimUtils.data;
 import static at.fwuick.daheim.utils.QueryUtils.select;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import at.fwuick.daheim.DaheimException;
 import at.fwuick.daheim.DaheimExceptionSupplier;
-import at.fwuick.daheim.DaheimExceptionSupplier.Errors;
 import at.fwuick.daheim.model.User;
 import at.fwuick.daheim.model.UserIdentity;
 
@@ -31,6 +27,7 @@ public class UserDao {
   public void insert(User user) {
     jdbcTemplate.update("INSERT INTO USERS (name, uuid) VALUES (?, ?)", new Object[] { user.getName(), user.getUuid() });
     user.setId(jdbcTemplate.queryForObject("select max(id) from users", Long.class));
+    jdbcTemplate.update("insert into user_status (user, status) values (?, 1)", new Object[] { user.getId() });
   }
 
   private RowMapper<User> baseUserMapper = (rs, rowNum) -> {
@@ -42,9 +39,6 @@ public class UserDao {
     user.setStatus(rs.getLong("status"));
     return user;
   };
-
-
-
 
   public void updateHome(User user) {
     jdbcTemplate.update("update users set home = ? where id = ?", new Object[] { user.getHome(), user.getId() });
@@ -58,6 +52,6 @@ public class UserDao {
   }
 
   public User get(UserIdentity id) {
-	  return jdbcTemplate.queryForObject(select("*", TABLE_NAME).where(id.getName()), new Object[] { id.getValue() }, baseUserMapper);
+    return jdbcTemplate.queryForObject(select("*", TABLE_NAME).where(id.getName()), new Object[] { id.getValue() }, baseUserMapper);
   }
 }
