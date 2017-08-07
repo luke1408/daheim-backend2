@@ -27,7 +27,7 @@ public class UserDao {
   public void insert(User user) {
     jdbcTemplate.update("INSERT INTO USERS (name, uuid) VALUES (?, ?)", new Object[] { user.getName(), user.getUuid() });
     user.setId(jdbcTemplate.queryForObject("select max(id) from users", Long.class));
-    jdbcTemplate.update("insert into user_status (user, status) values (?, 1)", new Object[] { user.getId() });
+    jdbcTemplate.update("insert into user_status (user, status) values (?, 4)", new Object[] { user.getId() });
   }
 
   private RowMapper<User> baseUserMapper = (rs, rowNum) -> {
